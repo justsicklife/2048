@@ -100,6 +100,7 @@ void PrintTileValue(int (*tileValue)[GRID_SIZE], int offsetX, int offsetY) {
 				break;
 			case 16:
 				textcolor(SkyBlue);
+				break;
 			case 32:
 				textcolor(YELLOW);
 				break;
@@ -128,151 +129,306 @@ void PrintTileValue(int (*tileValue)[GRID_SIZE], int offsetX, int offsetY) {
 	}
 }
 
-void MoveTiles(Direction dir,int (*arr)[GRID_SIZE]) {
+/*
+문제 1: 배열을 복사하는데 l 자로 복사할수도있고 - 자로 복사할수있는데 
+그걸 유연하게 함수에서 만들어야 된다.
+*/
+int* copyArr(int (*arr)[GRID_SIZE], int length, int x, int y, Direction dir) {
+
+	int* cpArr = (int*)(malloc(sizeof(int) * length));
+
 	switch (dir) {
 	case UP:
-		for (int i = 0; i < GRID_SIZE; i++) {
-			Stack stack = {};
-			initStack(&stack);
-			int prev = -1;
-			for (int j = GRID_SIZE-1; j >= 0; j--) 
-			{
-				int curValue = arr[j][i];
+		for (int i = length - 1,index = 0; i >= 0; i--,index++) {
+			cpArr[index] = arr[i][x];
+		}
+		break;
+	case DOWN:
+		for (int i = 0, index = 0; i < length; i++, index++) {
+			cpArr[index] = arr[i][x];
+		}
+		break;
+	case LEFT:
+		for (int i = length - 1, index = 0; i >= 0; i--, index++) {
+			cpArr[index] = arr[y][i];
+		}
+		break;
+	case RIGHT:
+		for (int i = 0, index = 0; i < length; i++, index++) {
+			cpArr[index] = arr[y][i];
+		}
+		break;
+	}
 
-				if (curValue == 0)
-					continue;
+	return cpArr;
+}
 
-				push(&stack, curValue);
-				
-				if (prev == curValue) {
-					peek(&stack, &prev);
-					int a = 0;
-					pop(&stack, &a);
-					pop(&stack, &a);
-					push(&stack, a * 2);
-					prev = -1;
-				}
-				else {
-					prev = curValue;
-				}
-				arr[j][i] = 0;
-			}
+int compareIntArrays(int (*arr1)[GRID_SIZE], int* arr2, int length, int x, int y, Direction dir) {
+	int isSame = 1;
 
-			int index = 0;
-			while (!isEmpty(&stack)) {
-				int a = 0;
-				pop(&stack, &a);
-				arr[index][i] = a;
-				index++;
+	switch (dir) {
+	case UP:
+		for (int i = length - 1, index = 0; i >= 0; i--, index++) {
+			if (arr2[index] != arr1[i][x]) {
+				isSame = 0;
+				break;
 			}
 		}
 		break;
 	case DOWN:
-		for (int i = 0; i < GRID_SIZE; i++) {
-			Stack stack = {};
-			initStack(&stack);
-			int prev = -1;
-			for (int j = 0; j <  GRID_SIZE; j++) {
-				if (arr[j][i] == 0) continue;
-
-				int curValue = arr[j][i];
-
-				push(&stack, curValue);
-
-				if (prev == curValue) {
-					peek(&stack, &prev);
-					int a = 0;
-					pop(&stack, &a);
-					pop(&stack, &a);
-					push(&stack, a * 2);
-					prev = -1;
-				}
-				else {
-					prev = curValue;
-				}
-				arr[j][i] = 0;
-			}
-
-			int index = GRID_SIZE -1;
-			while (!isEmpty(&stack)) {
-				int a = 0;
-				pop(&stack, &a);
-				arr[index][i] = a;
-				index--;
+		for (int i = 0, index = 0; i < length; i++, index++) {
+			if (arr2[index] != arr1[i][x]) {
+				isSame = 0;
+				break;
 			}
 		}
 		break;
 	case LEFT:
-		for (int i = 0; i < GRID_SIZE; i++) {
-			Stack stack = {};
-			initStack(&stack);
-			int prev = -1;
-			for (int j = GRID_SIZE - 1; j >= 0; j--) {
-				int curValue = arr[i][j];
-
-				if (curValue == 0) continue;
-
-				push(&stack, curValue);
-
-				if (prev == curValue) {
-					peek(&stack, &prev);
-					int a = 0;
-					pop(&stack, &a);
-					pop(&stack, &a);
-					push(&stack, a * 2);
-					prev = -1;
-				}
-				else {
-					prev = curValue;
-				}
-				arr[i][j] = 0;
-			}
-
-			int index = 0;
-			while (!isEmpty(&stack)) {
-				int a = 0;
-				pop(&stack, &a);
-				arr[i][index] = a;
-				index++;
+		for (int i = length - 1, index = 0; i >= 0; i--, index++) {
+			if (arr2[index] != arr1[y][i]) {
+				isSame = 0;
+				break;
 			}
 		}
 		break;
 	case RIGHT:
-		for (int i = 0; i < GRID_SIZE; i++) {
-			Stack stack = {};
-			initStack(&stack);
-			int prev = -1;
-			for (int j = 0; j < GRID_SIZE; j++) {
-				int curValue = arr[i][j];
-
-				if (curValue == 0) continue;
-
-				push(&stack, curValue);
-
-				if (prev == curValue) {
-					peek(&stack, &prev);
-					int a = 0;
-					pop(&stack, &a);
-					pop(&stack, &a);
-					push(&stack, a * 2);
-					prev = -1;
-				}
-				else {
-					prev = curValue;
-				}
-				arr[i][j] = 0;
-			}
-
-			int index = GRID_SIZE-1;
-			while (!isEmpty(&stack)) {
-				int a = 0;
-				pop(&stack, &a);
-				arr[i][index] = a;
-				index--;
+		for (int i = 0, index = 0; i < length; i++, index++) {
+			if (arr2[index] != arr1[y][i]) {
+				isSame = 0;
+				break;
 			}
 		}
 		break;
 	}
+
+	return isSame;
+}
+
+int MoveUpTiles(int (*arr)[GRID_SIZE]) {
+
+	int isMove = 1;
+
+	for (int i = 0; i < GRID_SIZE; i++) {
+		Stack stack = {};
+		initStack(&stack);
+		int prev = -1;
+
+		int* cpArr = copyArr(arr,GRID_SIZE,i,0,UP);
+
+		for (int j = GRID_SIZE - 1; j >= 0; j--)
+		{
+			int curValue = arr[j][i];
+
+			if (curValue == 0)
+				continue;
+
+			push(&stack, curValue);
+
+			if (prev == curValue) {
+				peek(&stack, &prev);
+				int a = 0;
+				pop(&stack, &a);
+				pop(&stack, &a);
+				push(&stack, a * 2);
+				prev = -1;
+			}
+			else {
+				prev = curValue;
+			}
+			arr[j][i] = 0;
+		}
+
+		int index = 0;
+		while (!isEmpty(&stack)) {
+			int a = 0;
+			pop(&stack, &a);
+			arr[index][i] = a;
+			index++;
+		}
+
+		// isMove 가 1 이라면 같다 다르다면 0
+		if (isMove == 0) {
+			continue;
+		}
+
+		isMove = compareIntArrays(arr, cpArr, GRID_SIZE,i,0,UP);
+	}
+
+	return isMove;
+}
+
+int MoveDownTiles(int (*arr)[GRID_SIZE]) {
+
+	int isMove = 1;
+
+	for (int i = 0; i < GRID_SIZE; i++) {
+		Stack stack = {};
+		initStack(&stack);
+		int prev = -1;
+
+		int* cpArr = copyArr(arr, GRID_SIZE,i,0,DOWN);
+
+		for (int j = 0; j < GRID_SIZE; j++) {
+			if (arr[j][i] == 0) continue;
+
+			int curValue = arr[j][i];
+
+			push(&stack, curValue);
+
+			if (prev == curValue) {
+				peek(&stack, &prev);
+				int a = 0;
+				pop(&stack, &a);
+				pop(&stack, &a);
+				push(&stack, a * 2);
+				prev = -1;
+			}
+			else {
+				prev = curValue;
+			}
+			arr[j][i] = 0;
+		}
+
+		int index = GRID_SIZE - 1;
+		while (!isEmpty(&stack)) {
+			int a = 0;
+			pop(&stack, &a);
+			arr[index][i] = a;
+			index--;
+		}
+
+		if (isMove == 0) {
+			continue;
+		}
+		isMove = compareIntArrays(arr, cpArr, GRID_SIZE, i, 0, DOWN);
+
+	}
+	return isMove;
+}
+
+int MoveLeftTiles(int (*arr)[GRID_SIZE]) {
+
+	int isMove = 1;
+
+	for (int i = 0; i < GRID_SIZE; i++) {
+		Stack stack = {};
+		initStack(&stack);
+		int prev = -1;
+
+		int* cpArr = copyArr(arr, GRID_SIZE,0,i,LEFT);
+
+
+		for (int j = GRID_SIZE - 1; j >= 0; j--) {
+			int curValue = arr[i][j];
+
+			if (curValue == 0) continue;
+
+			push(&stack, curValue);
+
+			if (prev == curValue) {
+				peek(&stack, &prev);
+				int a = 0;
+				pop(&stack, &a);
+				pop(&stack, &a);
+				push(&stack, a * 2);
+				prev = -1;
+				isMove = 1;
+			}
+			else {
+				prev = curValue;
+			}
+			arr[i][j] = 0;
+		}
+
+		int index = 0;
+		while (!isEmpty(&stack)) {
+			int a = 0;
+			pop(&stack, &a);
+			arr[i][index] = a;
+			index++;
+		}
+
+		if (isMove == 0) {
+			continue;
+		}
+		isMove = compareIntArrays(arr, cpArr, GRID_SIZE, 0, i, LEFT);
+	}
+	return isMove;
+}
+
+int MoveRightTiles(int (*arr)[GRID_SIZE]) {
+	
+	int isMove = 1;
+
+	for (int i = 0; i < GRID_SIZE; i++) {
+		Stack stack = {};
+		initStack(&stack);
+		int prev = -1;
+
+		int* cpArr = copyArr(arr, GRID_SIZE,0,i,RIGHT);
+
+
+		for (int j = 0; j < GRID_SIZE; j++) {
+			int curValue = arr[i][j];
+
+			if (curValue == 0) continue;
+
+			push(&stack, curValue);
+
+			if (prev == curValue) {
+				peek(&stack, &prev);
+				int a = 0;
+				pop(&stack, &a);
+				pop(&stack, &a);
+				push(&stack, a * 2);
+				prev = -1;
+				isMove = 1;
+			}
+			else {
+				prev = curValue;
+			}
+			arr[i][j] = 0;
+		}
+
+		int index = GRID_SIZE - 1;
+		while (!isEmpty(&stack)) {
+			int a = 0;
+			pop(&stack, &a);
+			arr[i][index] = a;
+			index--;
+		}
+
+		if (isMove == 0) {
+			continue;
+		}
+
+		isMove = compareIntArrays(arr, cpArr, GRID_SIZE, 0, i, RIGHT);
+
+	}
+	return isMove;
+}
+
+
+int MoveTiles(Direction dir,int (*arr)[GRID_SIZE]) {
+	
+	int isMove = 0;
+	
+	switch (dir) {
+	case UP:
+		isMove = MoveUpTiles(arr);
+		break;
+	case DOWN:
+		isMove = MoveDownTiles(arr);
+		break;
+	case LEFT:
+		isMove = MoveLeftTiles(arr);
+		break;
+	case RIGHT:
+		isMove = MoveRightTiles(arr);
+		break;
+	}
+
+	return isMove;
 }
 
 void spawnRandomTile(int arr[GRID_SIZE][GRID_SIZE]) {
@@ -296,7 +452,7 @@ void spawnRandomTile(int arr[GRID_SIZE][GRID_SIZE]) {
 		exit(0);
 	}
 
-	int randomIndex = rand() % (index + 1);
+	int randomIndex = rand() % index;
 
 	COORD Pos = pointList[randomIndex];
 
@@ -322,22 +478,24 @@ int main()
 
 		PrintTileValue(arr, 0, 0);
 
+		int isMove = 0;
+
 		GotoXY(0, 25);
 		char input[10];
 		printf("방향키를 입력하세요 (w, a, s, d): ");
 		scanf_s("%s", input, sizeof(input));
 
 		if (strcmp(input, "w") == 0) {
-			MoveTiles(UP, arr);
+			isMove= MoveTiles(UP, arr);
 		}
 		else if (strcmp(input, "a") == 0) {
-			MoveTiles(LEFT, arr);
+			isMove = MoveTiles(LEFT, arr);
 		}
 		else if (strcmp(input, "d") == 0) {
-			MoveTiles(RIGHT, arr);
+			isMove = MoveTiles(RIGHT, arr);
 		}
 		else if (strcmp(input, "s") == 0) {
-			MoveTiles(DOWN, arr);
+			isMove = MoveTiles(DOWN, arr);
 		}
 		else {
 			printf("잘못된 입력입니다.\n");
@@ -346,7 +504,9 @@ int main()
 			continue;
 		}
 
-		spawnRandomTile(arr);
+		if (isMove == 0) {
+			spawnRandomTile(arr);
+		}
 
 		system("cls");
 	}
